@@ -86,48 +86,41 @@ def reportingByText(data):
     return
 
 def reportingByPlots(data):
-    # barChart_AnnualRevuene(aata).show()
+    # barChart_AnnualRevuene(aata)
     barChart_MonthlyRevenue(data)
-#
-# Plot:
-# Gegenüberstellung der Monate gebündlte auf Jahr
-#
-def barChart_MonthlyRevenue(data):
-    BAR_WIDTH = 0.35
-    OPACITYy = 0.8
 
-    labels1 = []
-    labels2 = []
+def barChart_MonthlyRevenue(data):
+    BAR_WIDTH = 0.8
+
     dataSet = []
     monthSet = []
-    old_year = 0
+    yearLabels = []
     monthlyData = data.groupby(pandas.Grouper(key='Date', freq='1M'), sort=True).sum()
 
-    for month, row in monthlyData.iterrows():
-        labels1.append(month.year)
-        labels2.append(month.month)
+    for row, month in monthlyData:
+        if row[0] == 'D': # skip header
+            continue
+        
+        pprint(row)
+    # for month, monthRow in monthlyData.iterrows():
+        monthSet.append([row[2]])
 
-        if month.year == old_year:
-            monthSet.append(int(row.Amount))
-        else:
-            if len(monthSet) > 0:
-                dataSet.append([month.year, monthSet])
-                monthSet = []
+        if i % 12 == 0:
+            yearLabels.append(datetime.year(row[0]))
+            dataSet.append([datetime.year(row[0]), monthSet])
+            monthSet = []
 
-        old_year = month.year
-
-    yearLabels = numpy.unique(labels1)
-    monthLabels = numpy.unique(labels2)
+    monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Seü', 'Oct', 'Nov', 'Dec']
 
     barPos = numpy.arange(len(monthLabels))
-    colors=numpy.random.rand(len(yearLabels),3)
+    colors = numpy.random.rand(len(yearLabels),3)
 
     for year, row in dataSet:
-        plt.bar(barPos, row[1], color=colors, width=BAR_WIDTH, edgeColor='white', label=year)
-        barPos = [x + BAR_WIDTH for x in barPos]
+        plt.bar(barPos, row[1], color=colors, width=BAR_WIDTH/len(dataSet), edgeColor='white', label=year)
+        barPos = [x + (BAR_WIDTH/len(dataSet)) for x in barPos]
 
     plt.xlabel('Month over year', fontweight='bold')
-    plt.xticks([r + BAR_WIDTH for r in range(len(monthLabels))], monthLabels)
+    plt.xticks([r + (BAR_WIDTH/len(dataSet)) for r in range(len(monthLabels))], monthLabels)
     plt.legend()
     plt.show()
     return
@@ -137,7 +130,7 @@ def barChart_AnnualRevuene(data):
 
     labels = []
     yearData = []
-    for year, row in data.iterrows():
+    for year, row in annualData.iterrows():
         labels.append(year.year)
         yearData.append(int(row.Amount))
 
@@ -153,6 +146,7 @@ def barChart_AnnualRevuene(data):
     ax.set_xticklabels(labels)
     autolabel(ax, rects)
     fig.tight_layout()
+    plt.show()
     return plt
     
 def autolabel(ax, rects):
